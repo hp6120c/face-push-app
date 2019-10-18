@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no">
+    <link href="./css/hotel.css" rel="stylesheet">
+    <script src="js/flexible.js"></script>
+    <style>
+        .listItem {
+
+            padding: 0.28125rem 0.375rem
+        }
+
+        #background {
+            width: 100%;
+            height: 100%;
+            /* top: 0px;
+            bottom: 0px; */
+            position: fixed;
+            background: linear-gradient(180deg, rgba(62, 59, 54, 1) 0%, rgba(46, 45, 37, 1) 100%);
+        }
+    </style>
+    <script src="js/reconnecting-websocket.min.js"></script>
+</head>
+
+<body>
+    <div id="background"></div>
+    <div class="home">
+        <img src="./img/guide.png">
+    </div>
+    <div id="app">
+
+
+        <div class="header">
+            <img src="img/image1.png" alt="" class="hImg">
+            <span>VIP Real-time Notification</span>
+            <img src="img/image2.png" alt="" class="hImg">
+        </div>
+        <div class="contentList">
+            <!-- <div class="listItem" >
+                <div class="mainItem">
+                    <div class="itemL">
+                        <img src="item.pictures[0]" alt="" class="avatar">
+                    </div>
+                    <div class="itemR">
+                        <div class="itemr1"> <span>{{item.name}}</span> <img src="img/v1.png" alt="" class="level"></div>
+                        <div class="itemr2"> <img src="img/time.png" alt="" class="time"> <span>{{item.timeStamp}}</span></div>
+                        <div class="itemr3">
+                            <img src="img/location.png" alt="" class="location">
+                            <span>{{item.deviceName}}</span>
+                            <span class='view' style="float:right;  color:rgba(182,162,109,1);">View <img src="img/down.png"
+                                    alt="" style="width:0.2rem"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="hideItem">
+                    <img src="ipAddress+'/api/v2/cmcc/monitor/alarm/query/sms-scene/'+item.sceneId+'?token=7d1e52d3cf0142e19b5901eb1ef91372'"
+                        alt="" class="itemPhoto">
+                </div>
+            </div> -->
+        </div>
+    </div>
+    <script src='js/jquery-3.3.1.min.js'></script>
+
+
+
+    <script src="js/vue.js"></script>
+
+    <script>
+        var itemlist = {
+            deviceName: "B1-T2 Smart IT office",
+            eventType: "smsr_alarm_face",
+            faceId: "5c8e31d8ee65790008db2463",
+            faceSimilarity: 0.55144185,
+            groupName: "VIP",
+            groupType: "1000100211451002",
+            lat: 54.385512,
+            lng: 24.438335,
+            name: "Peng Hou",
+
+            personId: 1540,
+            personType: "100010001007",
+            personTypeName: "VIP",
+            pictures: [
+                "http://192.168.100.10:18082/api/v2/file/image-download?code=101105&objectId=5c864c405f58bf9ae50c690c&name=VIP013"
+            ],
+            sceneId: "5c8e31d8ee65790008db2462",
+            sourceId: "6666",
+            sourceName: "B1-T2 Smart IT office",
+            timeStamp: 1552822744885,
+            url: "http://192.168.100.10:18082/api/v2/cmcc/monitor/alarm/query/sms-face/5c8e31d8ee65790008db2463"
+        }
+        var ipAddress = "http://192.168.2.66:18081",
+            websocketIp = '192.168.2.66:18081'
+
+        function add0(m) {
+            return m < 10 ? '0' + m : m
+        }
+
+        function format(shijianchuo) {
+            var time = new Date(shijianchuo);
+            var y = time.getFullYear();
+            var m = time.getMonth() + 1;
+            var d = time.getDate();
+            var h = time.getHours();
+            var mm = time.getMinutes();
+            var s = time.getSeconds();
+            return y + '-' + this.add0(m) + '-' + this.add0(d) + ' ' + this.add0(h) + ':' + this.add0(mm) + ':' +
+                this.add0(s);
+        }
+        var ws = new ReconnectingWebSocket('ws://' + this.websocketIp + '/websocket');
+        ws.timeoutInterval = 2000
+        ws.onopen = function () {
+            // Web Socket 已连接上，使用 send() 方法发送数据
+
+        };
+        ws.onmessage = function (res) {
+            additem(res)
+
+
+        }
+        ws.onclose = function () {
+
+        }
+        ws.onerror = function () {
+
+        }
+
+        function additem(res) {
+            var data = JSON.parse(res.data)
+            //moke 用
+            // var data = {
+            //     data: {}
+            // }
+            // data.data = res
+            //........
+            if (data.data.eventType == 'smsr_alarm_face') {
+                if (data.data.personTypeName.indexOf('VIP') != -1) {
+                    navigator.vibrate(1000)
+                    if (data.data.pictures[0].indexOf(' ') != -1) {
+                        data.data.pictures[0] = data.data.pictures[0].split(' ').join('%20')
+                    }
+                    console.log('get')
+                    // console.log(_this.itemlist)
+
+                    data.data.timeStamp = format(data.data.timeStamp)
+                    // _this.itemlist.push(data.data)          
+                    // console.log(_this.itemlist)
+                    var vip1 = " <div class='listItem' ><div class='mainItem'> <div class='itemL'><img src='" + data
+                        .data
+                        .pictures[0] +
+                        "' alt='' class='avatar'> </div> <div class='itemR'> <div class='itemr1'> <span>" +
+                        data.data.name +
+                        "</span> <img src='img/v1.png' alt='' class='level'></div> <div class='itemr2'> <img src='img/time.png' alt='' class='time'> <span>" +
+                        data.data.timeStamp +
+                        "</span></div> <div class='itemr3'> <img src='img/location.png' alt='' class='location'><span>" +
+                        data.data.deviceName +
+                        "</span> <span class='view' style='float:right;  color:rgba(182,162,109,1);'>View <img src='img/down.png'   alt='' style='width:0.2rem'></span> </div>  </div> </div> <div class='hideItem'> <img src='" +
+                        ipAddress + "/api/v2/cmcc/monitor/alarm/query/sms-scene/" + data.data.sceneId +
+                        "?token=7d1e52d3cf0142e19b5901eb1ef91372'  class='itemPhoto'> </div>  </div>"
+                    var vip2 = " <div class='listItem' ><div class='mainItem'> <div class='itemL'><img src='" + data
+                        .data
+                        .pictures[0] +
+                        "' alt='' class='avatar'> </div> <div class='itemR'> <div class='itemr1'> <span>" +
+                        data.data.name +
+                        "</span> <img src='img/v2.png' alt='' class='level'></div> <div class='itemr2'> <img src='img/time.png' alt='' class='time'> <span>" +
+                        data.data.timeStamp +
+                        "</span></div> <div class='itemr3'> <img src='img/location.png' alt='' class='location'><span>" +
+                        data.data.deviceName +
+                        "</span> <span class='view' style='float:right;  color:rgba(182,162,109,1);'>View <img src='img/down.png'   alt='' style='width:0.2rem'></span> </div>  </div> </div> <div class='hideItem'> <img src='" +
+                        ipAddress + "/api/v2/cmcc/monitor/alarm/query/sms-scene/" + data.data.sceneId +
+                        "?token=7d1e52d3cf0142e19b5901eb1ef91372'  class='itemPhoto'> </div>  </div>"
+                    var vip3 = " <div class='listItem' ><div class='mainItem'> <div class='itemL'><img src='" + data
+                        .data
+                        .pictures[0] +
+                        "' alt='' class='avatar'> </div> <div class='itemR'> <div class='itemr1'> <span>" +
+                        data.data.name +
+                        "</span> <img src='img/v3.png' alt='' class='level'></div> <div class='itemr2'> <img src='img/time.png' alt='' class='time'> <span>" +
+                        data.data.timeStamp +
+                        "</span></div> <div class='itemr3'> <img src='img/location.png' alt='' class='location'><span>" +
+                        data.data.deviceName +
+                        "</span> <span class='view' style='float:right;  color:rgba(182,162,109,1);'>View <img src='img/down.png'   alt='' style='width:0.2rem'></span> </div>  </div> </div> <div class='hideItem'> <img src='" +
+                        ipAddress + "/api/v2/cmcc/monitor/alarm/query/sms-scene/" + data.data.sceneId +
+                        "?token=7d1e52d3cf0142e19b5901eb1ef91372'  class='itemPhoto'> </div>  </div>"
+                    var vip4 = " <div class='listItem' ><div class='mainItem'> <div class='itemL'><img src='" + data
+                        .data
+                        .pictures[0] +
+                        "' alt='' class='avatar'> </div> <div class='itemR'> <div class='itemr1'> <span>" +
+                        data.data.name +
+                        "</span> <img src='img/v4.png' alt='' class='level'></div> <div class='itemr2'> <img src='img/time.png' alt='' class='time'> <span>" +
+                        data.data.timeStamp +
+                        "</span></div> <div class='itemr3'> <img src='img/location.png' alt='' class='location'><span>" +
+                        data.data.deviceName +
+                        "</span> <span class='view' style='float:right;  color:rgba(182,162,109,1);'>View <img src='img/down.png'   alt='' style='width:0.2rem'></span> </div>  </div> </div> <div class='hideItem'> <img src='" +
+                        ipAddress + "/api/v2/cmcc/monitor/alarm/query/sms-scene/" + data.data.sceneId +
+                        "?token=7d1e52d3cf0142e19b5901eb1ef91372'  class='itemPhoto'> </div>  </div>"
+                    var vip5 = " <div class='listItem' ><div class='mainItem'> <div class='itemL'><img src='" + data
+                        .data
+                        .pictures[0] +
+                        "' alt='' class='avatar'> </div> <div class='itemR'> <div class='itemr1'> <span>" +
+                        data.data.name +
+                        "</span> <img src='img/v5.png' alt='' class='level'></div> <div class='itemr2'> <img src='img/time.png' alt='' class='time'> <span>" +
+                        data.data.timeStamp +
+                        "</span></div> <div class='itemr3'> <img src='img/location.png' alt='' class='location'><span>" +
+                        data.data.deviceName +
+                        "</span> <span class='view' style='float:right;  color:rgba(182,162,109,1);'>View <img src='img/down.png'   alt='' style='width:0.2rem'></span> </div>  </div> </div> <div class='hideItem'> <img src='" +
+                        ipAddress + "/api/v2/cmcc/monitor/alarm/query/sms-scene/" + data.data.sceneId +
+                        "?token=7d1e52d3cf0142e19b5901eb1ef91372'  class='itemPhoto'> </div>  </div>"
+                    switch (data.data.vip) {
+                        case 'VIP1':
+                            $('.contentList').prepend(vip1)
+                            break;
+                        case 'VIP2':
+                            $('.contentList').prepend(vip2)
+                            break;
+                        case 'VIP3':
+                            $('.contentList').prepend(vip3)
+                            break;
+                        case 'VIP4':
+                            $('.contentList').prepend(vip4)
+                            break;
+                        case 'VIP5':
+                            $('.contentList').prepend(vip5)
+                            break;
+                    }
+                    
+                    let items = $('.listItem')
+                    items.unbind("click");
+                    items.click(function () {
+                        console.log(this)
+                        var detail = $(this).find('.hideItem')
+                        // console.log($(this).css('background'))
+                        if ($(this).css('backgroundColor') == 'rgb(36, 34, 31)') {
+                            $(this).css({
+                                backgroundColor: 'rgba(0, 0, 0, 0)'
+                            })
+                        } else {
+                            $(this).css({
+                                backgroundColor: 'rgb(36, 34, 31)'
+                            })
+                        }
+
+                        $(detail).slideToggle()
+                    })
+
+                }
+            }
+        }
+
+        // additem(itemlist)
+
+
+
+        setTimeout(() => {
+            $('.home').hide()
+        }, 3000)
+    </script>
+    <script src='cordova.js'></script>
+</body>
+
+</html>
